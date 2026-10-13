@@ -1343,26 +1343,6 @@ function dsBow(c,x0,y0,w,h,P,seed){
   const m=5.8*u;
   return {cb:{x0:px0+m,y0:py0+m*.9,x1:px1-m,y1:py1-m*.9},onPaper:true,medal:"seal",bowTop:{x:x0+w/2,y:py0}};
 }
-/* holographic foil strip for the mandala spine (only used by that design) */
-function holoBand(c,x,y,w,h,u,seed){
-  const rng=rngOf((seed||7)+57),R=[x,y,w,h];
-  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();
-  const stops=["#9fe3ea","#a9c2f6","#c6aef3","#f3b8dd","#f9e0b2","#cdf2cf"],g=c.createLinearGradient(x-w*.2,y,x+w*1.2,y+h*.62),reps=3,tot=reps*(stops.length-1);
-  for(let r=0;r<reps;r++)for(let i=0;i<stops.length;i++){const t=(r*(stops.length-1)+i)/tot;g.addColorStop(Math.min(1,t),stops[(r%2?stops.length-1-i:i)]);}
-  c.fillStyle=g;c.fillRect(x,y,w,h);
-  const cyl=c.createLinearGradient(x,0,x+w,0);
-  cyl.addColorStop(0,"rgba(255,255,255,.55)");cyl.addColorStop(.3,"rgba(255,255,255,.10)");cyl.addColorStop(.55,"rgba(255,255,255,.34)");cyl.addColorStop(.85,"rgba(255,255,255,.08)");cyl.addColorStop(1,"rgba(255,255,255,.5)");
-  c.fillStyle=cyl;c.fillRect(x,y,w,h);
-  c.save();c.translate(x+w/2,y+h/2);c.rotate(-.55);const dg=Math.hypot(w,h),sp=u*.55;
-  for(let yy=-dg/2,k=0;yy<dg/2;yy+=sp,k++){const md=.5+.5*Math.sin(k*.5);c.lineWidth=u*.14;c.strokeStyle="rgba(255,255,255,"+(.10+.16*md).toFixed(3)+")";c.beginPath();c.moveTo(-dg/2,yy);c.lineTo(dg/2,yy);c.stroke();}
-  c.restore();
-  for(let i=0;i<5;i++){const px=x+w*(.2+rng()*.6),py=y+h*((i+.3+rng()*.4)/5),r=u*(.9+rng()*.8);
-    const hg=c.createRadialGradient(px,py,0,px,py,r*2.4);hg.addColorStop(0,"rgba(255,255,255,.6)");hg.addColorStop(1,"rgba(255,255,255,0)");c.fillStyle=hg;c.fillRect(px-r*2.4,py-r*2.4,r*4.8,r*4.8);
-    c.save();c.translate(px,py);star(c,r,"rgba(255,255,255,.95)",4,.2);c.restore();}
-  c.restore();
-  c.save();c.lineWidth=u*.3;c.strokeStyle="rgba(255,255,255,.9)";c.beginPath();c.moveTo(x+u*.6,y);c.lineTo(x+u*.6,y+h);c.stroke();
-  c.strokeStyle="rgba(52,69,111,.3)";c.beginPath();c.moveTo(x+w-u*.4,y);c.lineTo(x+w-u*.4,y+h);c.stroke();c.restore();
-}
 function dsMandala(c,x0,y0,w,h,P,seed){
   const u=w/100,x1=x0+w,y1=y0+h,rng=rngOf(seed||9);
   paintBg(c,P,x0,y0,w,h,seed);
@@ -1385,7 +1365,7 @@ function dsMandala(c,x0,y0,w,h,P,seed){
   }
   mand(mx,my,w*.78,1);
   /* calligraphy band */
-  const bw=13*u;c.save();c.fillStyle=P.dark?mixc(P.bg,P.deep,.5):mixc(P.bg,P.deep,.22);if(P.fx&&P.fx.mode==="holo")holoBand(c,x1-bw,y0,bw,h,u,seed);else c.fillRect(x1-bw,y0,bw,h);
+  const bw=13*u;c.save();c.fillStyle=P.dark?mixc(P.bg,P.deep,.5):mixc(P.bg,P.deep,.22);c.fillRect(x1-bw,y0,bw,h);
   c.strokeStyle=P.dark?rgba(P.gold,.7):rgba(P.deep,.45);c.lineWidth=u*.3;c.beginPath();c.moveTo(x1-bw,y0);c.lineTo(x1-bw,y1);c.stroke();
   c.beginPath();c.rect(x1-bw,y0,bw,h);c.clip();c.translate(x1-bw/2,y0);
   const ink=P.dark?rgba(P.gold,.9):rgba(P.deep,.85);
