@@ -357,6 +357,10 @@ select:focus,input[type=text]:focus{outline:3px solid color-mix(in srgb,var(--gr
 
 .mt-r{display:flex;align-items:center;gap:8px;flex:none}
 .tsz.lang{padding:0 16px;font-weight:700;letter-spacing:.04em}
+.tsz.thm{width:48px;padding:0;justify-content:center;gap:0}
+.tsz.thm svg{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tsz.thm[aria-pressed="true"]{background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 88%,var(--line)));border-color:var(--hair);color:var(--ink)}
+
 @media (max-width:420px){.mast-top{flex-wrap:wrap}.tsz{padding:0 12px}}
 select,option{font-family:"Noto Sans Thai","Amiri",system-ui,sans-serif}
 </style>
@@ -369,7 +373,7 @@ select,option{font-family:"Noto Sans Thai","Amiri",system-ui,sans-serif}
 <header class="mast">
 <div class="mast-top">
 <p class="eyebrow">สำหรับพิมพ์ · ใช้ได้ฟรี</p>
-<div class="mt-r"><button type="button" class="tsz lang" id="langBtn" aria-label="Language / ภาษา"><span id="langLab">EN</span></button><button type="button" class="tsz" id="tsz" aria-pressed="false"><span class="a1">ก</span><span class="a2">ก</span><span id="tszLab">ขยายตัวอักษร</span></button></div>
+<div class="mt-r"><button type="button" class="tsz lang" id="langBtn" aria-label="Language / ภาษา"><span id="langLab">EN</span></button><button type="button" class="tsz thm" id="thm" aria-pressed="false"></button></div>
 </div>
 <p class="ar" lang="ar"><span>مصحف المدينة</span></p>
 <h1>ชุดฝึกเขียนอัลกุรอาน</h1>
@@ -1895,19 +1899,34 @@ $("go").addEventListener("click",async()=>{
     const dl=await dlP;
     say(TR("ไฟล์พร้อมแล้ว กำลังบันทึก…","File ready. Saving…"));
     const res=dl?await dl.save({filename:name,data}):fallbackSave({filename:name,data});
-    say(res&&res.status==="built"?TR("สร้างไฟล์แล้ว ถ้าไม่เริ่มโหลดเอง ให้แตะลิงก์สีเขียว","File built. If the download does not start, tap the green link."):TR("บันทึกแล้ว: ","Saved: ")+name,"ok");
+    say(res&&res.status==="built"?TR("สร้างไฟล์แล้ว ถ้าไม่เริ่มโหลดเอง ให้แตะลิงก์ด้านล่าง","File built. If the download does not start, tap the link below."):TR("บันทึกแล้ว: ","Saved: ")+name,"ok");
   }catch(e){
     say((e&&e.code==="declined")?TR("ยกเลิกการบันทึกแล้ว กดดาวน์โหลดใหม่ได้เมื่อพร้อม","Saving cancelled. Press download again when you are ready."):TR("ยังไม่สำเร็จ: ","Did not work: ")+((e&&e.message)||TR("ไม่ทราบสาเหตุ","unknown reason"))+TR(" ลองกดอีกครั้ง"," Please try again."),"err");
   }
   setBusy(false);setTimeout(()=>{$("prog").style.width="0";},500);
 });
 (function(){
-  const b=$("tsz"),l=$("tszLab"),KEY="quran-tracing-big";let on=false;
-  function apply(v){document.documentElement.classList.toggle("big",v);b.setAttribute("aria-pressed",String(v));l.textContent=v?TR("ตัวอักษรปกติ","Normal text"):TR("ขยายตัวอักษร","Larger text");setTimeout(fitProof,0);}
-  window.__tszApply=()=>apply(on);
-  try{on=localStorage.getItem(KEY)==="1";}catch(_){}
-  apply(on);
-  b.addEventListener("click",()=>{on=!on;apply(on);try{localStorage.setItem(KEY,on?"1":"0");}catch(_){}});
+  const b=$("thm"),KEY="quran-tracing-theme",root=document.documentElement;
+  const mq=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):null;
+  let mode=null;
+  try{mode=localStorage.getItem(KEY);localStorage.removeItem("quran-tracing-big");}catch(_){}
+  if(mode!=="light"&&mode!=="dark")mode=null;
+  root.classList.remove("big");
+  const MOON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>';
+  const SUN='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3L17 7M7 17l-1.7 1.7"/></svg>';
+  const isDark=()=>mode?mode==="dark":!!(mq&&mq.matches);
+  function apply(){
+    if(mode)root.setAttribute("data-theme",mode);else root.removeAttribute("data-theme");
+    const d=isDark();
+    b.innerHTML=d?SUN:MOON;
+    b.setAttribute("aria-pressed",String(d));
+    const lab=d?TR("เปลี่ยนเป็นโหมดกลางวัน","Switch to light mode"):TR("เปลี่ยนเป็นโหมดกลางคืน","Switch to dark mode");
+    b.setAttribute("aria-label",lab);b.title=lab;
+  }
+  window.__tszApply=apply;
+  apply();
+  b.addEventListener("click",()=>{mode=isDark()?"light":"dark";apply();try{localStorage.setItem(KEY,mode);}catch(_){}});
+  if(mq&&mq.addEventListener)mq.addEventListener("change",()=>{if(!mode)apply();});
 })();
 if(window.ResizeObserver)new ResizeObserver(()=>fitProof()).observe($("pstage"));
 window.addEventListener("load",()=>{fitProof();scrollRail();});
